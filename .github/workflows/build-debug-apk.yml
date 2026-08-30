@@ -25,6 +25,9 @@ jobs:
         with:
           gradle-version: '8.14.3'
 
+      - name: Regenerate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.3
+
       - name: Build debug APK
         run: ./gradlew assembleDebug -x lint
 
