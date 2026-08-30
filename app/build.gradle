@@ -6,6 +6,7 @@ android {
 
     defaultConfig {
         applicationId "sk.madzik.android.logcatudp"
+        namespace "sk.madzik.android.logcatudp"
         minSdkVersion 21
         targetSdkVersion 34
     }
