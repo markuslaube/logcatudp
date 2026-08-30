@@ -64,6 +64,8 @@ public class LogcatThread extends Thread {
                         }
                         try { Thread.sleep(1000); } catch (InterruptedException ie) { break; }
                     }
+                } else {
+                    try { Thread.sleep(100); } catch (InterruptedException ie) { break; }
                 }
             }
         } catch (IOException e) {
