@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import android.util.Log;
 
@@ -38,9 +39,9 @@ public class LogcatThread extends Thread {
             String logLine;
             boolean socketFailed = false;
             InetAddress destAddress = InetAddress.getByName(mConfig.mDestServer);
-            while (true) {
+
+            while (!isInterrupted()) {
                 String sendingLine = "";
-                // assume that log writes whole lines
                 if (bufferedReader.ready()) {
                     logLine = bufferedReader.readLine();
                     if (mConfig.mSendIds) {
@@ -56,17 +57,13 @@ public class LogcatThread extends Thread {
                             socketFailed = false;
                         }
                         sendingLine = "";
-                    } catch (SocketException e) {
-                        // it's OK, line was remembered
+                    } catch (IOException e) {
                         if (!socketFailed) {
-                            Log.d(TAG, "socket send failed " + e);
+                            Log.d(TAG, "socket send failed: " + e.getMessage());
                             socketFailed = true;
                         }
+                        try { Thread.sleep(1000); } catch (InterruptedException ie) { break; }
                     }
-                }
-                if (isInterrupted()) {
-                    Log.d(TAG, "interupted.");
-                    break;
                 }
             }
         } catch (IOException e) {
