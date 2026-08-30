@@ -15,7 +15,12 @@ public class LogcatUdpReceiver extends BroadcastReceiver {
         SharedPreferences settings = context.getSharedPreferences(LogcatUdpCfg.Preferences.PREFS_NAME, Context.MODE_PRIVATE);
 
         if (settings.getBoolean(LogcatUdpCfg.Preferences.AUTO_START, true)) {
-            context.startService(new Intent(context, LogcatUdpService.class));
+            Intent serviceIntent = new Intent(context, LogcatUdpService.class);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent);
+            } else {
+                context.startService(serviceIntent);
+            }
             Log.i(TAG, "Starting Service");
         }
     }

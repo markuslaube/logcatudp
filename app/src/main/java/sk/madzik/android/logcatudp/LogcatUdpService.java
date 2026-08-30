@@ -4,14 +4,17 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings.Secure;
+import androidx.core.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -35,6 +38,7 @@ public class LogcatUdpService extends Service {
     private LogcatThread mLogcatThread = null;
     private NotificationManager mNotificationManager = null;
     private int SERVICE_NOTIFICATION_ID = 1;
+    private String CHANNEL_ID = "logcatudp_foreground";
 
     @Override
     public void onCreate() {
@@ -58,16 +62,21 @@ public class LogcatUdpService extends Service {
 
         // status bar notification icon manager
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        int icon = R.drawable.ic_stat_notif;
-        Notification notif = new Notification(icon, this.getString(R.string.notif_text), System.currentTimeMillis());
-        notif.flags |= Notification.FLAG_ONGOING_EVENT;
-        notif.flags |= Notification.FLAG_NO_CLEAR;
-        notif.setLatestEventInfo(
-                getApplicationContext(),
-                this.getString(R.string.notif_text),
-                this.getString(R.string.notif_message),
-                PendingIntent.getActivity(this, 0, new Intent(this, LogcatUdpCfg.class), 0));
-        mNotificationManager.notify(SERVICE_NOTIFICATION_ID, notif);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "LogcatUDP Service", NotificationManager.IMPORTANCE_LOW);
+            mNotificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_notif)
+                .setContentTitle(this.getString(R.string.notif_text))
+                .setContentText(this.getString(R.string.notif_message))
+                .setOngoing(true)
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, LogcatUdpCfg.class), 0));
+
+        Notification notif = builder.build();
+        startForeground(SERVICE_NOTIFICATION_ID, notif);
 
         try {
             mSocket = new DatagramSocket();
@@ -83,6 +92,11 @@ public class LogcatUdpService extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, TAG + " stopping.");
@@ -91,7 +105,6 @@ public class LogcatUdpService extends Service {
             try {
                 mLogcatThread.join(1000);
                 if (mLogcatThread.isAlive()) {
-                    // TODO: Display "force close/wait" dialog
                     mLogcatThread.join();
                 }
             } catch (InterruptedException e) {
