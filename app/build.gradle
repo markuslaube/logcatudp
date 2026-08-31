@@ -5,16 +5,33 @@ android {
     buildToolsVersion "34.0.0"
 
     defaultConfig {
-        applicationId "sk.madzik.android.logcatudp"
-        namespace "sk.madzik.android.logcatudp"
+        applicationId "bi.lau.android.logcatudp"
+        namespace "bi.lau.android.logcatudp"
         minSdkVersion 21
         targetSdkVersion 34
+        versionCode = Integer.valueOf(System.getenv("BITRISE_BUILD_NUMBER") ?: System.getenv("GITHUB_RUN_NUMBER") ?: "1")
+        versionName = "1.${System.getenv("GITHUB_RUN_NUMBER") ?: "1"}"
+    }
+
+    signingConfigs {
+        release {
+            if (System.env.SIGNING_KEYSTORE) {
+                storeFile file(System.env.SIGNING_KEYSTORE)
+                storePassword System.env.SIGNING_STORE_PASSWORD
+                keyAlias System.env.SIGNING_KEY_ALIAS
+                keyPassword System.env.SIGNING_KEY_PASSWORD
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
         }
     }
 }

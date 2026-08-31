@@ -1,4 +1,4 @@
-package sk.madzik.android.logcatudp;
+package bi.lau.android.logcatudp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 
 import android.util.Log;
 
-import sk.madzik.android.logcatudp.LogcatUdpService.Config;
+import bi.lau.android.logcatudp.LogcatUdpService.Config;
 
 public class LogcatThread extends Thread {
     private static final String TAG = "LogcatThread";

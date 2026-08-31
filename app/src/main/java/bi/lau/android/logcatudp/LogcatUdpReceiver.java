@@ -1,4 +1,4 @@
-package sk.madzik.android.logcatudp;
+package bi.lau.android.logcatudp;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

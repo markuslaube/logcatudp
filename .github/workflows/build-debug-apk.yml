@@ -1,4 +1,4 @@
-name: Build Debug APK
+name: Build Signed APK
 
 on:
   push:
@@ -29,12 +29,22 @@ jobs:
       - name: Regenerate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.14.3
 
-      - name: Build debug APK
+      - name: Decode signing keystore
+        run: |
+          echo "${{ secrets.LOGCATUDP_KEYSTORE }}" | base64 -d > app/logcatudp.keystore
+
+      - name: Build signed APK
+        env:
+          SIGNING_KEYSTORE: app/logcatudp.keystore
+          SIGNING_STORE_PASSWORD: ${{ secrets.LOGCATUDP_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.LOGCATUDP_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.LOGCATUDP_KEY_PASSWORD }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: ./gradlew assembleDebug -x lint
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: logcatudp-debug-apk
+          name: logcatudp-signed-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30

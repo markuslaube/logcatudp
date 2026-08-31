@@ -1,4 +1,4 @@
-package sk.madzik.android.logcatudp;
+package bi.lau.android.logcatudp;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

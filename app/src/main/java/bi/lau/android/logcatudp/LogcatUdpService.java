@@ -1,4 +1,4 @@
-package sk.madzik.android.logcatudp;
+package bi.lau.android.logcatudp;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
