@@ -1,14 +1,54 @@
 # Logcat to UDP
 
-Simple android development tool that send log to UDP port. Background service is collecting logs and sending them to destination IP and UDP port. You can send logs to desktop through home wifi network, or to server with public IP or cname. You can use your desktop syslog server to receive logs (see below).
+Fork of [Chemik/logcatudp](https://github.com/Chemik/logcatudp) with fixes for
+Android 8.1+ (Oreo) foreground service requirements and reliability improvements.
 
-Or simply share your log with favorite application (eg. gmail).
+Background service collects logcat output and sends it via UDP to a syslog server
+or custom receiver. Useful for monitoring Android devices remotely - even when not
+connected via ADB.
 
-Receive logs from your phone even if it is not connected to computer.
+Tested on:
+- Android 8.1 (Android Things, Lenovo 10" displays)
+- Android 10 (Lenovo Tab M10 FHD Plus, rooted with Magisk)
+- Android 11 (PHH-su, 7" display)
 
-Available in [Google Play](https://play.google.com/store/apps/details?id=sk.madzik.android.logcatudp)
+Pre-built APKs are available on the [Releases page](https://github.com/markuslaube/logcatudp/releases).
 
-For discussion use [this mailing list](http://groups.google.com/group/logcatudp-discuss).
+## Changes from upstream
+
+- Renamed package to `bi.lau.android.logcatudp` (avoids conflicts with upstream)
+- `startForegroundService()` for Android 8+ compatibility
+- Retry logic on `ENETUNREACH` (network not yet ready at boot)
+- 50ms sleep when logcat buffer empty (fixes 100% CPU busy-loop)
+- Signed builds via GitHub Actions with fixed keystore
+- Auto-versioning: `versionCode = GITHUB_RUN_NUMBER`, `versionName = 1.<run_number>`
+
+## Granting READ_LOGS permission
+
+LogcatUDP requires `READ_LOGS` to collect system logs. On most Android devices this
+can be granted via GUI (Settings > Apps > LogcatUDP > Permissions).
+
+On devices without a standard permission UI (e.g. Android Things), grant it manually
+via ADB with root access:
+
+```
+adb root
+adb shell pm grant bi.lau.android.logcatudp android.permission.READ_LOGS
+```
+
+If `adb root` is not available (production firmware), use `su`:
+
+```
+adb shell su -c "pm grant bi.lau.android.logcatudp android.permission.READ_LOGS"
+```
+
+After granting, start the service:
+
+```
+adb shell am start-foreground-service -n bi.lau.android.logcatudp/.LogcatUdpService
+```
+
+The service auto-starts on boot via `BOOT_COMPLETED` broadcast receiver.
 
 ## HOWTO Recieve Logs
 
